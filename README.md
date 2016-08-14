@@ -1,2 +1,2 @@
 # PracticalMachineLearning
-A repository using Github Pages
+Repository for JHU Coursera Practical Machine Learning
