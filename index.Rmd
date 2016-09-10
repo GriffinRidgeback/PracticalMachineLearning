@@ -4,16 +4,166 @@ author: "Kevin E. D'Elia"
 date: "September 10th, 2016"
 output: 
   html_document: 
+    highlight: espresso
     keep_md: yes
+    theme: journal
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 # Introduction
+This paper summarizes the knowledge gained during the Practical Machine Learning module of the Coursera Data Science Specialization.  It attempts to predict
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website [here](http://groupware.les.inf.puc-rio.br/har) (see the section on the Weight Lifting Exercise Dataset).
+
+## Data
+
+The training data for this project are available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)
+
+The test data are available 
+[here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)
+
+The data for this project come from this [source](http://groupware.les.inf.puc-rio.br/har). If you use their data for any purpose, please cite them in your work.
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+[Read more](http://groupware.les.inf.puc-rio.br/har#ixzz4Jrvxp2iu)
+
+This paper makes extensive use of the **caret** package.  More information about this package can be found [here](http://topepo.github.io/caret/index.html)
+
 # Creating Training and Testing Datasets
+## Load the Data
+
+Before the data is loaded into R, it was viewed using a spreadsheet program.
+Examination of the data reveals columns with spurious data, such as divide-by-zero indicators.  These were identified and specified to the _na.strings_ parameter of the **read.csv** method.
+
+
+```{r load_data}
+trainingData <- read.csv("pml-training.csv", na.strings = c("NA", "#DIV/0!", ""))
+testingData <- read.csv("pml-testing.csv", na.strings = c("NA", "#DIV/0!", ""))
+```
+
+## Load the necessary packages
+
+The caret package will be needed for the data tidying work as well as model building, etc., so load it now.
+```{r load_packages}
+library(caret)
+```
 # Data Tidying
-# Model Building 
+The initial data prep puts the datasets in a good state for data tidying.
+```{r data_tidy_1}
+dim(trainingData)
+```
+Clearly there are a lot of variables (predictors) to choose from.  But not all of them might be suitable.  The task here is to eliminate/reduce the number of predictors to a reasonable working set.  The first step in that process is to look at the names.
+```{r data_tidy_2}
+names(trainingData)
+```
+of these, the first 7 will not be candidates for predictor variables, so they will be removed from both the training and testing datasets.
+```{r data_tidy_3}
+trainingData <- trainingData[, 8:ncol(trainingData)]
+testingData <- testingData[, 8:ncol(testingData)]
+```
+
+The data contains many columns with a large number of **NA** values.  Columns with 50% or greater of NA values will contribute nothing to the model.  These are removed with the following line of code:
+
+```{r data_tidy_4}
+trainingData <- trainingData[, colSums(is.na(trainingData)) < (nrow(trainingData) * 0.5)]
+testingData <- testingData[, colSums(is.na(testingData)) < (nrow(testingData) * 0.5)]
+
+```
+
+The last step in the data tidying process is to check for any columns where the variance is near or equal to zero, meaning that these variables can potentially cause problems for modeling.
+**need to explain this better**
+```{r data_tidy_5}
+nearZeroVar(trainingData)
+nearZeroVar(testingData)
+```
+
+The result, **integer(0)**, means that no columns have a near-zero variance (i.e., zeroVar and nzv display FALSE for all predictors when using the _saveMetrics_ parameter set to **TRUE**) and thus all the columns we have in the dataset can be considered adequate predictors.
+The data tidying portion of the work is done; on to model building.
+
 # Model Evaluation and Selection
+
+## Reproducibility of work
+```{r set_seed}
+set.seed(9999)
+```
+
+## Create Training and Testing datasets
+```{r train_and_test}
+
+INDEX <- createDataPartition(y=trainingData$classe, p=0.6, list = FALSE)
+trainingSet <- trainingData[INDEX,]
+testingSet <- trainingData[-INDEX,]
+
+```
+
+Another approach that's commonly used is
+what's called K-fold cross validation. So the idea here is we break our data set
+up into k equal size data sets. So, for example, for three fold cross validation, this is what it would look
+like. So here's. The first data set, right here, then
+there's a middle data set right here, and the last third
+data set right here, and so what we would do is on the
+first fold, we would build a prediction model on
+this training data. And we would apply it to this test data. Then we would build a training our model
+on the, just the dark gray components of this second fold, and apply
+it to the middle fold for evaluation. Then finally, we would do the same thing
+down here. We would build our model on this dark gray
+part, and apply it to the light gray part. And again, we would average the errors
+that we got across all of those experiments, and
+we would get an estimate of [COUGH] the average error
+rate that we would get in an out of sample
+estimation procedure. So again, all of these model building and
+evaluation are happening in, within the training set, which we've
+been subs divided into a. Sub training set and a sub testing set to
+evaluate models.
+
+ For k-fold cross validation, the larger
+the k that you take, you'll get less bias, but more
+variance. And the smaller k that you take, you'll
+get more bias, but less variance. In other words, if you took a very large
+k, say for example a ten-fold cross validation or a 20-fold cross validation,
+that means you'll get a very accurate estimate of
+the. Of the bias between your predicted values,
+and your true values. But it'll be highly variable. In other words, it'll depend a lot on
+which random subsets that you take. For smaller ks, we won't necessarily get
+as good an estimate of the out of sample error
+rate. And that's because, you're only leaving
+one sample out. And so you're using most of your data to
+train your model. But there'll be less variance. In other words, if you do in the extreme
+case. If you have for exampleonly two cross,
+two-fold cross validation, there are only a very
+small. Number of subsets that can make up a
+two-fold cross validation. And so you get less variance.
+The selected algorithm is Random Forest.  A 3-cross validation will be used:
+
+```{r random_forest}
+trainingControl <- trainControl(method = "cv", number = 3)
+rfModel <- train(classe ~ ., data = trainingSet, method = "rf", trControl=trainingControl)
+
+```
+
 # Model Retraining
-# Predictions Using Test Set
+
+# Prediction using Training and Test Sets
+```{r prediction}
+prediction <- predict(rfModel, trainingSet, type="raw")
+confusionMatrix(prediction, trainingSet$classe)
+prediction <- predict(rfModel, testingSet, type="raw")
+confusionMatrix(prediction, testingSet$classe)
+
+```
+
+# Predictions Using Test Data
+```{r predictions}
+prediction <- predict(rfModel, testingData, type = "raw")
+for (i in seq(20)) { 
+        fileName <- paste("Problem", i, ".txt"); 
+        write.table(prediction[i], 
+                    file = fileName, 
+                    quote = FALSE, 
+                    row.names = FALSE, 
+                    col.names = FALSE)
+        }
+```
