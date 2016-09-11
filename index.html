@@ -185,119 +185,278 @@ testingData &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span
 <p>The initial data prep puts the datasets in a good state for data tidying.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(trainingData)</code></pre></div>
 <pre><code>## [1] 19622   160</code></pre>
-<p>Clearly there are a lot of variables (predictors) to choose from. But not all of them might be suitable. The task here is to eliminate/reduce the number of predictors to a reasonable working set. The first step in that process is to look at the names.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(trainingData)</code></pre></div>
-<pre><code>##   [1] &quot;X&quot;                        &quot;user_name&quot;               
-##   [3] &quot;raw_timestamp_part_1&quot;     &quot;raw_timestamp_part_2&quot;    
-##   [5] &quot;cvtd_timestamp&quot;           &quot;new_window&quot;              
-##   [7] &quot;num_window&quot;               &quot;roll_belt&quot;               
-##   [9] &quot;pitch_belt&quot;               &quot;yaw_belt&quot;                
-##  [11] &quot;total_accel_belt&quot;         &quot;kurtosis_roll_belt&quot;      
-##  [13] &quot;kurtosis_picth_belt&quot;      &quot;kurtosis_yaw_belt&quot;       
-##  [15] &quot;skewness_roll_belt&quot;       &quot;skewness_roll_belt.1&quot;    
-##  [17] &quot;skewness_yaw_belt&quot;        &quot;max_roll_belt&quot;           
-##  [19] &quot;max_picth_belt&quot;           &quot;max_yaw_belt&quot;            
-##  [21] &quot;min_roll_belt&quot;            &quot;min_pitch_belt&quot;          
-##  [23] &quot;min_yaw_belt&quot;             &quot;amplitude_roll_belt&quot;     
-##  [25] &quot;amplitude_pitch_belt&quot;     &quot;amplitude_yaw_belt&quot;      
-##  [27] &quot;var_total_accel_belt&quot;     &quot;avg_roll_belt&quot;           
-##  [29] &quot;stddev_roll_belt&quot;         &quot;var_roll_belt&quot;           
-##  [31] &quot;avg_pitch_belt&quot;           &quot;stddev_pitch_belt&quot;       
-##  [33] &quot;var_pitch_belt&quot;           &quot;avg_yaw_belt&quot;            
-##  [35] &quot;stddev_yaw_belt&quot;          &quot;var_yaw_belt&quot;            
-##  [37] &quot;gyros_belt_x&quot;             &quot;gyros_belt_y&quot;            
-##  [39] &quot;gyros_belt_z&quot;             &quot;accel_belt_x&quot;            
-##  [41] &quot;accel_belt_y&quot;             &quot;accel_belt_z&quot;            
-##  [43] &quot;magnet_belt_x&quot;            &quot;magnet_belt_y&quot;           
-##  [45] &quot;magnet_belt_z&quot;            &quot;roll_arm&quot;                
-##  [47] &quot;pitch_arm&quot;                &quot;yaw_arm&quot;                 
-##  [49] &quot;total_accel_arm&quot;          &quot;var_accel_arm&quot;           
-##  [51] &quot;avg_roll_arm&quot;             &quot;stddev_roll_arm&quot;         
-##  [53] &quot;var_roll_arm&quot;             &quot;avg_pitch_arm&quot;           
-##  [55] &quot;stddev_pitch_arm&quot;         &quot;var_pitch_arm&quot;           
-##  [57] &quot;avg_yaw_arm&quot;              &quot;stddev_yaw_arm&quot;          
-##  [59] &quot;var_yaw_arm&quot;              &quot;gyros_arm_x&quot;             
-##  [61] &quot;gyros_arm_y&quot;              &quot;gyros_arm_z&quot;             
-##  [63] &quot;accel_arm_x&quot;              &quot;accel_arm_y&quot;             
-##  [65] &quot;accel_arm_z&quot;              &quot;magnet_arm_x&quot;            
-##  [67] &quot;magnet_arm_y&quot;             &quot;magnet_arm_z&quot;            
-##  [69] &quot;kurtosis_roll_arm&quot;        &quot;kurtosis_picth_arm&quot;      
-##  [71] &quot;kurtosis_yaw_arm&quot;         &quot;skewness_roll_arm&quot;       
-##  [73] &quot;skewness_pitch_arm&quot;       &quot;skewness_yaw_arm&quot;        
-##  [75] &quot;max_roll_arm&quot;             &quot;max_picth_arm&quot;           
-##  [77] &quot;max_yaw_arm&quot;              &quot;min_roll_arm&quot;            
-##  [79] &quot;min_pitch_arm&quot;            &quot;min_yaw_arm&quot;             
-##  [81] &quot;amplitude_roll_arm&quot;       &quot;amplitude_pitch_arm&quot;     
-##  [83] &quot;amplitude_yaw_arm&quot;        &quot;roll_dumbbell&quot;           
-##  [85] &quot;pitch_dumbbell&quot;           &quot;yaw_dumbbell&quot;            
-##  [87] &quot;kurtosis_roll_dumbbell&quot;   &quot;kurtosis_picth_dumbbell&quot; 
-##  [89] &quot;kurtosis_yaw_dumbbell&quot;    &quot;skewness_roll_dumbbell&quot;  
-##  [91] &quot;skewness_pitch_dumbbell&quot;  &quot;skewness_yaw_dumbbell&quot;   
-##  [93] &quot;max_roll_dumbbell&quot;        &quot;max_picth_dumbbell&quot;      
-##  [95] &quot;max_yaw_dumbbell&quot;         &quot;min_roll_dumbbell&quot;       
-##  [97] &quot;min_pitch_dumbbell&quot;       &quot;min_yaw_dumbbell&quot;        
-##  [99] &quot;amplitude_roll_dumbbell&quot;  &quot;amplitude_pitch_dumbbell&quot;
-## [101] &quot;amplitude_yaw_dumbbell&quot;   &quot;total_accel_dumbbell&quot;    
-## [103] &quot;var_accel_dumbbell&quot;       &quot;avg_roll_dumbbell&quot;       
-## [105] &quot;stddev_roll_dumbbell&quot;     &quot;var_roll_dumbbell&quot;       
-## [107] &quot;avg_pitch_dumbbell&quot;       &quot;stddev_pitch_dumbbell&quot;   
-## [109] &quot;var_pitch_dumbbell&quot;       &quot;avg_yaw_dumbbell&quot;        
-## [111] &quot;stddev_yaw_dumbbell&quot;      &quot;var_yaw_dumbbell&quot;        
-## [113] &quot;gyros_dumbbell_x&quot;         &quot;gyros_dumbbell_y&quot;        
-## [115] &quot;gyros_dumbbell_z&quot;         &quot;accel_dumbbell_x&quot;        
-## [117] &quot;accel_dumbbell_y&quot;         &quot;accel_dumbbell_z&quot;        
-## [119] &quot;magnet_dumbbell_x&quot;        &quot;magnet_dumbbell_y&quot;       
-## [121] &quot;magnet_dumbbell_z&quot;        &quot;roll_forearm&quot;            
-## [123] &quot;pitch_forearm&quot;            &quot;yaw_forearm&quot;             
-## [125] &quot;kurtosis_roll_forearm&quot;    &quot;kurtosis_picth_forearm&quot;  
-## [127] &quot;kurtosis_yaw_forearm&quot;     &quot;skewness_roll_forearm&quot;   
-## [129] &quot;skewness_pitch_forearm&quot;   &quot;skewness_yaw_forearm&quot;    
-## [131] &quot;max_roll_forearm&quot;         &quot;max_picth_forearm&quot;       
-## [133] &quot;max_yaw_forearm&quot;          &quot;min_roll_forearm&quot;        
-## [135] &quot;min_pitch_forearm&quot;        &quot;min_yaw_forearm&quot;         
-## [137] &quot;amplitude_roll_forearm&quot;   &quot;amplitude_pitch_forearm&quot; 
-## [139] &quot;amplitude_yaw_forearm&quot;    &quot;total_accel_forearm&quot;     
-## [141] &quot;var_accel_forearm&quot;        &quot;avg_roll_forearm&quot;        
-## [143] &quot;stddev_roll_forearm&quot;      &quot;var_roll_forearm&quot;        
-## [145] &quot;avg_pitch_forearm&quot;        &quot;stddev_pitch_forearm&quot;    
-## [147] &quot;var_pitch_forearm&quot;        &quot;avg_yaw_forearm&quot;         
-## [149] &quot;stddev_yaw_forearm&quot;       &quot;var_yaw_forearm&quot;         
-## [151] &quot;gyros_forearm_x&quot;          &quot;gyros_forearm_y&quot;         
-## [153] &quot;gyros_forearm_z&quot;          &quot;accel_forearm_x&quot;         
-## [155] &quot;accel_forearm_y&quot;          &quot;accel_forearm_z&quot;         
-## [157] &quot;magnet_forearm_x&quot;         &quot;magnet_forearm_y&quot;        
-## [159] &quot;magnet_forearm_z&quot;         &quot;classe&quot;</code></pre>
-<p>of these, the first 7 will not be candidates for predictor variables, so they will be removed.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingData &lt;-<span class="st"> </span>trainingData[, <span class="dv">8</span>:<span class="kw">ncol</span>(trainingData)]</code></pre></div>
+<p>Clearly there are a lot (160) of variables/predictors to choose from. But not all of them might be suitable. The task here is to eliminate/reduce the number of predictors to a reasonable working set. The first step in that process is to look at the data. Judging from the columns names seen in the spreadsheet (and, in the absence of a data dictionary), the first 7 columns are likely candidates for exclusion:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(testingData[, <span class="dv">1</span>:<span class="dv">7</span>], <span class="dt">n =</span> <span class="dv">3</span>)</code></pre></div>
+<pre><code>##   X user_name raw_timestamp_part_1 raw_timestamp_part_2   cvtd_timestamp
+## 1 1     pedro           1323095002               868349 05/12/2011 14:23
+## 2 2    jeremy           1322673067               778725 30/11/2011 17:11
+## 3 3    jeremy           1322673075               342967 30/11/2011 17:11
+##   new_window num_window
+## 1         no         74
+## 2         no        431
+## 3         no        439</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tail</span>(testingData[, <span class="dv">1</span>:<span class="dv">7</span>], <span class="dt">n =</span> <span class="dv">3</span>)</code></pre></div>
+<pre><code>##     X user_name raw_timestamp_part_1 raw_timestamp_part_2   cvtd_timestamp
+## 18 18  carlitos           1323084285               176314 05/12/2011 11:24
+## 19 19     pedro           1323094999               828379 05/12/2011 14:23
+## 20 20    eurico           1322489658               106658 28/11/2011 14:14
+##    new_window num_window
+## 18         no        361
+## 19         no         72
+## 20         no        255</code></pre>
+<p>These values are clearly not useful as predictor variables, so they will be removed from both the training and testing datasets.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingData &lt;-<span class="st"> </span>trainingData[, <span class="dv">8</span>:<span class="kw">ncol</span>(trainingData)]
+testingData &lt;-<span class="st"> </span>testingData[, <span class="dv">8</span>:<span class="kw">ncol</span>(testingData)]</code></pre></div>
 <p>The data contains many columns with a large number of <strong>NA</strong> values. Columns with 50% or greater of NA values will contribute nothing to the model. These are removed with the following line of code:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingData &lt;-<span class="st"> </span>trainingData[, <span class="kw">colSums</span>(<span class="kw">is.na</span>(trainingData)) &lt;<span class="st"> </span>(<span class="kw">nrow</span>(trainingData) *<span class="st"> </span><span class="fl">0.5</span>)]</code></pre></div>
-<p>The last step in the data tidying process is to check for any columns where the variance is near zero <strong>need to explain this better</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingData &lt;-<span class="st"> </span>trainingData[, <span class="kw">colSums</span>(<span class="kw">is.na</span>(trainingData)) &lt;<span class="st"> </span>(<span class="kw">nrow</span>(trainingData) *<span class="st"> </span><span class="fl">0.5</span>)]
+testingData &lt;-<span class="st"> </span>testingData[, <span class="kw">colSums</span>(<span class="kw">is.na</span>(testingData)) &lt;<span class="st"> </span>(<span class="kw">nrow</span>(testingData) *<span class="st"> </span><span class="fl">0.5</span>)]</code></pre></div>
+<p>The last step in the data tidying process is to check for any columns where the variance is near or equal to zero, meaning that these variables can potentially cause problems for modeling.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nearZeroVar</span>(trainingData)</code></pre></div>
 <pre><code>## integer(0)</code></pre>
-<p>The result, <strong>integer(0)</strong>, means that no columns have a near-zero variance and thus all the columns we have in the dataset can be considered adequate predictors. The data tidying portion of the work is done; on to model building.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nearZeroVar</span>(testingData)</code></pre></div>
+<pre><code>## integer(0)</code></pre>
+<p>The result, <strong>integer(0)</strong>, means that no columns have a near-zero variance (i.e., zeroVar and nzv display FALSE for all predictors when using the <em>saveMetrics</em> parameter set to <strong>TRUE</strong>) and thus all the columns we have in the dataset can be considered adequate predictors. The data tidying portion of the work is done; on to model building.</p>
 </div>
 <div id="model-evaluation-and-selection" class="section level1">
 <h1>Model Evaluation and Selection</h1>
 <div id="reproducibility-of-work" class="section level2">
 <h2>Reproducibility of work</h2>
+<p>In order to ensure consistent results across subsequent runs of the code, a seed value is set so that the same values will be generated for all the model training and fitting executions.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">9999</span>)</code></pre></div>
 </div>
 <div id="create-training-and-testing-datasets" class="section level2">
 <h2>Create Training and Testing datasets</h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">INDEX &lt;-<span class="st"> </span><span class="kw">createDataPartition</span>(<span class="dt">y=</span>trainingData$classe, <span class="dt">p=</span><span class="fl">0.6</span>, <span class="dt">list =</span> <span class="ot">FALSE</span>)
+<p>In order to train the model and preserve the testing dataset, the original training data is split into two sub-datasets: training and testing. It’s a bit confusing but the purpose is to allow a higher degree of accuracy (i.e., low out-of-sample errors) when making predictions on the pristine testing dataset based on a refined model fit. Basically, the procedure is:</p>
+<ol style="list-style-type: decimal">
+<li>split original training set into sub-training/test sets</li>
+<li>build the model on sub-training set</li>
+<li>evaluate the model on sub-test set</li>
+<li>repeat and average estimated errors</li>
+</ol>
+<p>This is accomplished using the <em>createDataPartition</em> method in the <strong>caret</strong> package:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">INDEX &lt;-<span class="st"> </span><span class="kw">createDataPartition</span>(<span class="dt">y =</span> trainingData$classe, <span class="dt">p =</span> <span class="fl">0.6</span>, <span class="dt">list =</span> <span class="ot">FALSE</span>)
+<span class="co"># Create a sub-training set using 60% of the original training data</span>
 trainingSet &lt;-<span class="st"> </span>trainingData[INDEX,]
+<span class="co"># Create a sub-testing set using 40% of the original training data</span>
 testingSet &lt;-<span class="st"> </span>trainingData[-INDEX,]</code></pre></div>
-<p>The selected algorithm is Random Forest. A 3-cross validation will be used:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingControl &lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;cv&quot;</span>, <span class="dt">number =</span> <span class="dv">3</span>)
-rfModel &lt;-<span class="st"> </span><span class="kw">train</span>(classe ~<span class="st"> </span>., <span class="dt">data =</span> trainingSet, <span class="dt">method =</span> <span class="st">&quot;rf&quot;</span>, <span class="dt">trControl=</span>trainingControl)</code></pre></div>
-<pre><code>## Loading required package: randomForest</code></pre>
-<pre><code>## randomForest 4.6-12</code></pre>
-<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
-<pre><code>## 
-## Attaching package: 'randomForest'</code></pre>
-<pre><code>## The following object is masked from 'package:ggplot2':
+<p>Next, a trainControl instance is created, using 3-fold cross validation.</p>
+<p>So the idea here is we break our data set up into k equal size data sets. we would build a prediction model on k-1 folds and apply the model to the kth fold. So, dividing our dataset into 3 folds, the prediction model would be built on the first two folds, applied to the third fold and so on. this training data. And we would apply it to this test data. Then we would build a training our model • break training set into K subsets • build the model/predictor on the remaining training data in each subset and applied to the test subset • rebuild the data K times with the training and test subsets and average the findings • considerations – larger k = less bias, more variance – smaller k = more bias, less variance</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingControl &lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;cv&quot;</span>, <span class="dt">number =</span> <span class="dv">3</span>)</code></pre></div>
+<p>Once the trainingControl has been created, it is passed to the <strong>train</strong> function, which applies the desired machine learning algorithm to construct a model from the subset of the training data. Three different tree-based algorithms will be evaluated:</p>
+<ol style="list-style-type: decimal">
+<li>Decision Trees (rpart)</li>
+<li>Gradient Boosting Trees (gbm)</li>
+<li>Random Forest Decision Trees (rf)</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cartModel &lt;-<span class="st"> </span><span class="kw">trainer</span>(<span class="st">&quot;rpart&quot;</span>)
+gbmModel &lt;-<span class="st"> </span><span class="kw">trainer</span>(<span class="st">&quot;gbm&quot;</span>)</code></pre></div>
+<pre><code>## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.1276
+##      2        1.5236            -nan     0.1000    0.0850
+##      3        1.4660            -nan     0.1000    0.0638
+##      4        1.4226            -nan     0.1000    0.0558
+##      5        1.3859            -nan     0.1000    0.0472
+##      6        1.3542            -nan     0.1000    0.0450
+##      7        1.3248            -nan     0.1000    0.0345
+##      8        1.3028            -nan     0.1000    0.0336
+##      9        1.2802            -nan     0.1000    0.0354
+##     10        1.2572            -nan     0.1000    0.0321
+##     20        1.0972            -nan     0.1000    0.0162
+##     40        0.9250            -nan     0.1000    0.0091
+##     60        0.8163            -nan     0.1000    0.0059
+##     80        0.7377            -nan     0.1000    0.0040
+##    100        0.6751            -nan     0.1000    0.0038
+##    120        0.6231            -nan     0.1000    0.0031
+##    140        0.5796            -nan     0.1000    0.0023
+##    150        0.5608            -nan     0.1000    0.0011
 ## 
-##     margin</code></pre>
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.1836
+##      2        1.4884            -nan     0.1000    0.1319
+##      3        1.4029            -nan     0.1000    0.1039
+##      4        1.3379            -nan     0.1000    0.0852
+##      5        1.2822            -nan     0.1000    0.0707
+##      6        1.2371            -nan     0.1000    0.0643
+##      7        1.1943            -nan     0.1000    0.0621
+##      8        1.1548            -nan     0.1000    0.0461
+##      9        1.1247            -nan     0.1000    0.0465
+##     10        1.0951            -nan     0.1000    0.0508
+##     20        0.8926            -nan     0.1000    0.0188
+##     40        0.6803            -nan     0.1000    0.0103
+##     60        0.5510            -nan     0.1000    0.0071
+##     80        0.4619            -nan     0.1000    0.0059
+##    100        0.3944            -nan     0.1000    0.0022
+##    120        0.3432            -nan     0.1000    0.0021
+##    140        0.3006            -nan     0.1000    0.0009
+##    150        0.2821            -nan     0.1000    0.0015
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.2437
+##      2        1.4576            -nan     0.1000    0.1630
+##      3        1.3530            -nan     0.1000    0.1243
+##      4        1.2752            -nan     0.1000    0.1132
+##      5        1.2055            -nan     0.1000    0.0862
+##      6        1.1497            -nan     0.1000    0.0743
+##      7        1.1025            -nan     0.1000    0.0600
+##      8        1.0619            -nan     0.1000    0.0547
+##      9        1.0267            -nan     0.1000    0.0537
+##     10        0.9911            -nan     0.1000    0.0571
+##     20        0.7513            -nan     0.1000    0.0237
+##     40        0.5267            -nan     0.1000    0.0112
+##     60        0.3992            -nan     0.1000    0.0056
+##     80        0.3208            -nan     0.1000    0.0047
+##    100        0.2621            -nan     0.1000    0.0031
+##    120        0.2161            -nan     0.1000    0.0024
+##    140        0.1837            -nan     0.1000    0.0011
+##    150        0.1701            -nan     0.1000    0.0013
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.1317
+##      2        1.5193            -nan     0.1000    0.0914
+##      3        1.4582            -nan     0.1000    0.0724
+##      4        1.4107            -nan     0.1000    0.0541
+##      5        1.3751            -nan     0.1000    0.0543
+##      6        1.3393            -nan     0.1000    0.0390
+##      7        1.3133            -nan     0.1000    0.0400
+##      8        1.2877            -nan     0.1000    0.0324
+##      9        1.2660            -nan     0.1000    0.0300
+##     10        1.2448            -nan     0.1000    0.0293
+##     20        1.0869            -nan     0.1000    0.0193
+##     40        0.9135            -nan     0.1000    0.0091
+##     60        0.8048            -nan     0.1000    0.0066
+##     80        0.7240            -nan     0.1000    0.0043
+##    100        0.6622            -nan     0.1000    0.0045
+##    120        0.6114            -nan     0.1000    0.0029
+##    140        0.5687            -nan     0.1000    0.0024
+##    150        0.5486            -nan     0.1000    0.0026
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.1918
+##      2        1.4826            -nan     0.1000    0.1355
+##      3        1.3951            -nan     0.1000    0.1043
+##      4        1.3262            -nan     0.1000    0.0807
+##      5        1.2724            -nan     0.1000    0.0690
+##      6        1.2269            -nan     0.1000    0.0707
+##      7        1.1810            -nan     0.1000    0.0630
+##      8        1.1411            -nan     0.1000    0.0473
+##      9        1.1108            -nan     0.1000    0.0420
+##     10        1.0835            -nan     0.1000    0.0419
+##     20        0.8785            -nan     0.1000    0.0186
+##     40        0.6653            -nan     0.1000    0.0112
+##     60        0.5435            -nan     0.1000    0.0083
+##     80        0.4569            -nan     0.1000    0.0034
+##    100        0.3900            -nan     0.1000    0.0022
+##    120        0.3406            -nan     0.1000    0.0017
+##    140        0.2989            -nan     0.1000    0.0006
+##    150        0.2834            -nan     0.1000    0.0001
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.2378
+##      2        1.4548            -nan     0.1000    0.1675
+##      3        1.3458            -nan     0.1000    0.1285
+##      4        1.2639            -nan     0.1000    0.1046
+##      5        1.1976            -nan     0.1000    0.0906
+##      6        1.1392            -nan     0.1000    0.0708
+##      7        1.0926            -nan     0.1000    0.0638
+##      8        1.0515            -nan     0.1000    0.0638
+##      9        1.0104            -nan     0.1000    0.0569
+##     10        0.9732            -nan     0.1000    0.0442
+##     20        0.7382            -nan     0.1000    0.0224
+##     40        0.5104            -nan     0.1000    0.0117
+##     60        0.3952            -nan     0.1000    0.0047
+##     80        0.3137            -nan     0.1000    0.0030
+##    100        0.2574            -nan     0.1000    0.0024
+##    120        0.2147            -nan     0.1000    0.0024
+##    140        0.1828            -nan     0.1000    0.0012
+##    150        0.1691            -nan     0.1000    0.0013
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.1192
+##      2        1.5239            -nan     0.1000    0.0871
+##      3        1.4652            -nan     0.1000    0.0676
+##      4        1.4204            -nan     0.1000    0.0539
+##      5        1.3837            -nan     0.1000    0.0503
+##      6        1.3513            -nan     0.1000    0.0444
+##      7        1.3225            -nan     0.1000    0.0354
+##      8        1.2993            -nan     0.1000    0.0317
+##      9        1.2777            -nan     0.1000    0.0356
+##     10        1.2548            -nan     0.1000    0.0268
+##     20        1.0966            -nan     0.1000    0.0177
+##     40        0.9234            -nan     0.1000    0.0092
+##     60        0.8143            -nan     0.1000    0.0053
+##     80        0.7334            -nan     0.1000    0.0047
+##    100        0.6709            -nan     0.1000    0.0024
+##    120        0.6205            -nan     0.1000    0.0032
+##    140        0.5758            -nan     0.1000    0.0022
+##    150        0.5564            -nan     0.1000    0.0016
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.1803
+##      2        1.4881            -nan     0.1000    0.1273
+##      3        1.4053            -nan     0.1000    0.1030
+##      4        1.3374            -nan     0.1000    0.0846
+##      5        1.2814            -nan     0.1000    0.0784
+##      6        1.2316            -nan     0.1000    0.0614
+##      7        1.1922            -nan     0.1000    0.0568
+##      8        1.1550            -nan     0.1000    0.0491
+##      9        1.1228            -nan     0.1000    0.0395
+##     10        1.0959            -nan     0.1000    0.0389
+##     20        0.8840            -nan     0.1000    0.0180
+##     40        0.6693            -nan     0.1000    0.0113
+##     60        0.5474            -nan     0.1000    0.0079
+##     80        0.4674            -nan     0.1000    0.0053
+##    100        0.3983            -nan     0.1000    0.0032
+##    120        0.3433            -nan     0.1000    0.0036
+##    140        0.2997            -nan     0.1000    0.0021
+##    150        0.2824            -nan     0.1000    0.0019
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.2280
+##      2        1.4597            -nan     0.1000    0.1546
+##      3        1.3574            -nan     0.1000    0.1211
+##      4        1.2794            -nan     0.1000    0.1025
+##      5        1.2132            -nan     0.1000    0.0982
+##      6        1.1511            -nan     0.1000    0.0715
+##      7        1.1060            -nan     0.1000    0.0597
+##      8        1.0668            -nan     0.1000    0.0697
+##      9        1.0224            -nan     0.1000    0.0581
+##     10        0.9850            -nan     0.1000    0.0480
+##     20        0.7532            -nan     0.1000    0.0234
+##     40        0.5280            -nan     0.1000    0.0115
+##     60        0.3968            -nan     0.1000    0.0076
+##     80        0.3178            -nan     0.1000    0.0042
+##    100        0.2597            -nan     0.1000    0.0022
+##    120        0.2168            -nan     0.1000    0.0015
+##    140        0.1838            -nan     0.1000    0.0014
+##    150        0.1691            -nan     0.1000    0.0010
+## 
+## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
+##      1        1.6094            -nan     0.1000    0.2343
+##      2        1.4597            -nan     0.1000    0.1610
+##      3        1.3575            -nan     0.1000    0.1254
+##      4        1.2769            -nan     0.1000    0.1102
+##      5        1.2072            -nan     0.1000    0.0814
+##      6        1.1550            -nan     0.1000    0.0731
+##      7        1.1077            -nan     0.1000    0.0723
+##      8        1.0612            -nan     0.1000    0.0503
+##      9        1.0267            -nan     0.1000    0.0621
+##     10        0.9874            -nan     0.1000    0.0492
+##     20        0.7484            -nan     0.1000    0.0213
+##     40        0.5264            -nan     0.1000    0.0111
+##     60        0.4078            -nan     0.1000    0.0092
+##     80        0.3242            -nan     0.1000    0.0054
+##    100        0.2656            -nan     0.1000    0.0025
+##    120        0.2227            -nan     0.1000    0.0015
+##    140        0.1907            -nan     0.1000    0.0021
+##    150        0.1771            -nan     0.1000    0.0011</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rfModel &lt;-<span class="st"> </span><span class="kw">trainer</span>(<span class="st">&quot;rf&quot;</span>)
+
+<span class="co">#cartModel &lt;- train(classe ~ ., data = trainingSet, method = &quot;rpart&quot;, trControl = trainingControl)</span>
+<span class="co">#gbmModel &lt;- train(classe ~ ., data = trainingSet, method = &quot;gbm&quot;, trControl = trainingControl)</span>
+<span class="co">#rfModel &lt;- train(classe ~ ., data = trainingSet, method = &quot;rf&quot;, trControl = trainingControl)</span>
+
+<span class="co">#rfModel &lt;- train(classe ~ ., data = trainingSet, method = &quot;rf&quot;, trControl = trainingControl)</span>
+<span class="co">#rfModel$finalModel</span></code></pre></div>
 </div>
 </div>
 <div id="model-retraining" class="section level1">
@@ -305,7 +464,7 @@ rfModel &lt;-<span class="st"> </span><span class="kw">train</span>(classe ~<spa
 </div>
 <div id="prediction-using-training-and-test-sets" class="section level1">
 <h1>Prediction using Training and Test Sets</h1>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, trainingSet, <span class="dt">type=</span><span class="st">&quot;raw&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, <span class="dt">newdata =</span> trainingSet, <span class="dt">type=</span><span class="st">&quot;raw&quot;</span>)
 <span class="kw">confusionMatrix</span>(prediction, trainingSet$classe)</code></pre></div>
 <pre><code>## Confusion Matrix and Statistics
 ## 
@@ -338,51 +497,65 @@ rfModel &lt;-<span class="st"> </span><span class="kw">train</span>(classe ~<spa
 ## Detection Rate         0.2843   0.1935   0.1744   0.1639   0.1838
 ## Detection Prevalence   0.2843   0.1935   0.1744   0.1639   0.1838
 ## Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, testingSet, <span class="dt">type=</span><span class="st">&quot;raw&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, <span class="dt">newdata =</span> testingSet, <span class="dt">type=</span><span class="st">&quot;raw&quot;</span>)
 <span class="kw">confusionMatrix</span>(prediction, testingSet$classe)</code></pre></div>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 2231   12    0    0    0
-##          B    1 1503    8    0    1
-##          C    0    3 1355   24    6
-##          D    0    0    5 1259    4
-##          E    0    0    0    3 1431
+##          A 2230   13    0    0    0
+##          B    1 1502    8    0    1
+##          C    1    3 1355   26    5
+##          D    0    0    5 1257    4
+##          E    0    0    0    3 1432
 ## 
 ## Overall Statistics
-##                                           
-##                Accuracy : 0.9915          
-##                  95% CI : (0.9892, 0.9934)
-##     No Information Rate : 0.2845          
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
-##                                           
-##                   Kappa : 0.9892          
-##  Mcnemar's Test P-Value : NA              
+##                                          
+##                Accuracy : 0.9911         
+##                  95% CI : (0.9887, 0.993)
+##     No Information Rate : 0.2845         
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16      
+##                                          
+##                   Kappa : 0.9887         
+##  Mcnemar's Test P-Value : NA             
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9996   0.9901   0.9905   0.9790   0.9924
-## Specificity            0.9979   0.9984   0.9949   0.9986   0.9995
-## Pos Pred Value         0.9947   0.9934   0.9762   0.9929   0.9979
-## Neg Pred Value         0.9998   0.9976   0.9980   0.9959   0.9983
+## Sensitivity            0.9991   0.9895   0.9905   0.9774   0.9931
+## Specificity            0.9977   0.9984   0.9946   0.9986   0.9995
+## Pos Pred Value         0.9942   0.9934   0.9748   0.9929   0.9979
+## Neg Pred Value         0.9996   0.9975   0.9980   0.9956   0.9984
 ## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2843   0.1916   0.1727   0.1605   0.1824
-## Detection Prevalence   0.2859   0.1928   0.1769   0.1616   0.1828
-## Balanced Accuracy      0.9987   0.9943   0.9927   0.9888   0.9960</code></pre>
+## Detection Rate         0.2842   0.1914   0.1727   0.1602   0.1825
+## Detection Prevalence   0.2859   0.1927   0.1772   0.1614   0.1829
+## Balanced Accuracy      0.9984   0.9939   0.9925   0.9880   0.9963</code></pre>
 </div>
 <div id="predictions-using-test-data" class="section level1">
 <h1>Predictions Using Test Data</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, testingData, <span class="dt">type =</span> <span class="st">&quot;raw&quot;</span>)
-for (i in <span class="kw">seq</span>(<span class="dv">20</span>)) { 
-        fileName &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;Problem&quot;</span>, i, <span class="st">&quot;.txt&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;_&quot;</span>); 
-        <span class="kw">write.table</span>(prediction[i], 
-                    <span class="dt">file =</span> fileName, 
-                    <span class="dt">quote =</span> <span class="ot">FALSE</span>, 
-                    <span class="dt">row.names =</span> <span class="ot">FALSE</span>, 
-                    <span class="dt">col.names =</span> <span class="ot">FALSE</span>)
-        }</code></pre></div>
+for (i in <span class="dv">1</span>:<span class="kw">length</span>(prediction)) 
+        <span class="kw">print</span>(<span class="kw">paste0</span>(<span class="st">&quot;Prediction &quot;</span>, i, <span class="st">&quot; = &quot;</span>, prediction[i]))</code></pre></div>
+<pre><code>## [1] &quot;Prediction 1 = B&quot;
+## [1] &quot;Prediction 2 = A&quot;
+## [1] &quot;Prediction 3 = B&quot;
+## [1] &quot;Prediction 4 = A&quot;
+## [1] &quot;Prediction 5 = A&quot;
+## [1] &quot;Prediction 6 = E&quot;
+## [1] &quot;Prediction 7 = D&quot;
+## [1] &quot;Prediction 8 = B&quot;
+## [1] &quot;Prediction 9 = A&quot;
+## [1] &quot;Prediction 10 = A&quot;
+## [1] &quot;Prediction 11 = B&quot;
+## [1] &quot;Prediction 12 = C&quot;
+## [1] &quot;Prediction 13 = B&quot;
+## [1] &quot;Prediction 14 = A&quot;
+## [1] &quot;Prediction 15 = E&quot;
+## [1] &quot;Prediction 16 = E&quot;
+## [1] &quot;Prediction 17 = A&quot;
+## [1] &quot;Prediction 18 = B&quot;
+## [1] &quot;Prediction 19 = B&quot;
+## [1] &quot;Prediction 20 = B&quot;</code></pre>
 </div>
 
 
