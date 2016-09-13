@@ -138,7 +138,8 @@ trainer <- function(x) {
 
 ```{r model_training, message=FALSE}
 cartModel <- trainer("rpart")
-gbmModel <- trainer("gbm")
+# GBM prints out a LOT of unnecessary information for this report..
+suppressWarnings(gbmModel <- trainer("gbm"))
 rfModel <- trainer("rf")
 
 #cartModel <- train(classe ~ ., data = trainingSet, method = "rpart", trControl = trainingControl)
@@ -157,6 +158,23 @@ prediction <- predict(rfModel, newdata = trainingSet, type="raw")
 confusionMatrix(prediction, trainingSet$classe)
 prediction <- predict(rfModel, newdata = testingSet, type="raw")
 confusionMatrix(prediction, testingSet$classe)
+
+
+predCART <- predict(cartModel, newdata = trainingSet)
+cmCART <- confusionMatrix(predCART, testingSet$classe)
+predGBM <- predict(gbmModel, newdata = trainingSet)
+cmGBM <- confusionMatrix(predGBM, testingSet$classe)
+predRF <- predict(rfModel, newdata = trainingSet)
+cmRF <- confusionMatrix(predRF, testingSet$classe)
+```
+
+```{r kable_table}
+library(knitr)
+Model <- c("CART","GBM", "RF")
+Accuracy <- c(cmCART$overall[1], cmGBM$overall[1], cmRF$overall[1])
+theTable <- data.frame(Model, Accuracy)
+rownames(theTable) <- NULL
+kable(theTable)
 ```
 
 # Predictions Using Test Data
