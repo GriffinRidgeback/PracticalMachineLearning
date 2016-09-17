@@ -152,32 +152,28 @@ $(document).ready(function () {
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This paper summarizes the knowledge gained during the Practical Machine Learning module of the Coursera Data Science Specialization. It attempts to predict</p>
-<p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website <a href="http://groupware.les.inf.puc-rio.br/har">here</a> (see the section on the Weight Lifting Exercise Dataset).</p>
+<p>This paper summarizes the knowledge gained during the Practical Machine Learning module of the Coursera Data Science Specialization. It describes the processes of fitting various tree-based classification algorithms against training and validation datasets, evaluating the results of predictions made based on model fitted data, then choosing the best fit and using it to predict behavior for a non-classified dataset.</p>
+<p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit, it is now possible to collect a large amount of data about personal activity relatively inexpensively. These types of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how <strong>much</strong> of a particular activity they do, but they rarely quantify how <strong>well</strong> they do it. This project uses data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website <a href="http://groupware.les.inf.puc-rio.br/har">here</a> (see the section on the Weight Lifting Exercise Dataset).</p>
 <div id="data" class="section level2">
 <h2>Data</h2>
-<p>The training data for this project are available <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv">here</a></p>
-<p>The test data are available <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv">here</a></p>
-<p>The data for this project come from this <a href="http://groupware.les.inf.puc-rio.br/har">source</a>. If you use their data for any purpose, please cite them in your work.</p>
-<p>Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).</p>
-<p><a href="http://groupware.les.inf.puc-rio.br/har#ixzz4Jrvxp2iu">Read more</a></p>
-<p>This paper makes extensive use of the <strong>caret</strong> package. More information about this package can be found <a href="http://topepo.github.io/caret/index.html">here</a></p>
+<p>The training data for this project are available <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv">here</a>. The test data are available <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv">here</a>.</p>
+<p>The data for this project come from this <a href="http://groupware.les.inf.puc-rio.br/har">source</a>. <strong>If you use their data for any purpose, please cite them in your work.</strong></p>
+<p>Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E). <a href="http://groupware.les.inf.puc-rio.br/har#ixzz4Jrvxp2iu">Read more</a>.</p>
 </div>
 </div>
 <div id="creating-training-and-testing-datasets" class="section level1">
 <h1>Creating Training and Testing Datasets</h1>
+<p>From the two datasets, a training and validation dataset will be created from the main training data; the testing dataset will be untouched until the appropriate model has been selected, at which time it will be used to predict the activity performed by each trial participant.</p>
 <div id="load-the-data" class="section level2">
 <h2>Load the Data</h2>
-<p>Before the data is loaded into R, it was viewed using a spreadsheet program. Examination of the data reveals columns with spurious data, such as divide-by-zero indicators. These were identified and specified to the <em>na.strings</em> parameter of the <strong>read.csv</strong> method.</p>
+<p>Before the data was loaded into R, it was viewed using a spreadsheet program. Examination of the data revealed columns with spurious data, such as divide-by-zero indicators. These were identified and specified to the <em>na.strings</em> parameter of the <strong>read.csv</strong> method.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingData &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;pml-training.csv&quot;</span>, <span class="dt">na.strings =</span> <span class="kw">c</span>(<span class="st">&quot;NA&quot;</span>, <span class="st">&quot;#DIV/0!&quot;</span>, <span class="st">&quot;&quot;</span>))
 testingData &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;pml-testing.csv&quot;</span>, <span class="dt">na.strings =</span> <span class="kw">c</span>(<span class="st">&quot;NA&quot;</span>, <span class="st">&quot;#DIV/0!&quot;</span>, <span class="st">&quot;&quot;</span>))</code></pre></div>
 </div>
 <div id="load-the-necessary-packages" class="section level2">
 <h2>Load the necessary packages</h2>
-<p>The caret package will be needed for the data tidying work as well as model building, etc., so load it now.</p>
+<p>This paper makes extensive use of the <strong>caret</strong> package for the data tidying work as well as model building. More information about this package can be found <a href="http://topepo.github.io/caret/index.html">here</a>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(caret)</code></pre></div>
-<pre><code>## Loading required package: lattice</code></pre>
-<pre><code>## Loading required package: ggplot2</code></pre>
 </div>
 </div>
 <div id="data-tidying" class="section level1">
@@ -204,10 +200,10 @@ testingData &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span
 ## 18         no        361
 ## 19         no         72
 ## 20         no        255</code></pre>
-<p>These values are clearly not useful as predictor variables, so they will be removed from both the training and testing datasets.</p>
+<p>These values are clearly not useful as predictor variables and can be removed from both the training and testing datasets.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingData &lt;-<span class="st"> </span>trainingData[, <span class="dv">8</span>:<span class="kw">ncol</span>(trainingData)]
 testingData &lt;-<span class="st"> </span>testingData[, <span class="dv">8</span>:<span class="kw">ncol</span>(testingData)]</code></pre></div>
-<p>The data contains many columns with a large number of <strong>NA</strong> values. Columns with 50% or greater of NA values will contribute nothing to the model. These are removed with the following line of code:</p>
+<p>The data contains many columns with a large number of <strong>NA</strong> values. Columns with 50% or greater of <strong>NA</strong> values will contribute nothing to the model. These are removed with the following lines of code:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingData &lt;-<span class="st"> </span>trainingData[, <span class="kw">colSums</span>(<span class="kw">is.na</span>(trainingData)) &lt;<span class="st"> </span>(<span class="kw">nrow</span>(trainingData) *<span class="st"> </span><span class="fl">0.5</span>)]
 testingData &lt;-<span class="st"> </span>testingData[, <span class="kw">colSums</span>(<span class="kw">is.na</span>(testingData)) &lt;<span class="st"> </span>(<span class="kw">nrow</span>(testingData) *<span class="st"> </span><span class="fl">0.5</span>)]</code></pre></div>
 <p>The last step in the data tidying process is to check for any columns where the variance is near or equal to zero, meaning that these variables can potentially cause problems for modeling.</p>
@@ -215,10 +211,12 @@ testingData &lt;-<span class="st"> </span>testingData[, <span class="kw">colSums
 <pre><code>## integer(0)</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nearZeroVar</span>(testingData)</code></pre></div>
 <pre><code>## integer(0)</code></pre>
-<p>The result, <strong>integer(0)</strong>, means that no columns have a near-zero variance (i.e., zeroVar and nzv display FALSE for all predictors when using the <em>saveMetrics</em> parameter set to <strong>TRUE</strong>) and thus all the columns we have in the dataset can be considered adequate predictors. The data tidying portion of the work is done; on to model building.</p>
+<p>The result, <strong>integer(0)</strong>, means that no columns have a near-zero variance (i.e., <em>zeroVar</em> and <em>nzv</em> display <strong>FALSE</strong> for all predictors when using the <em>saveMetrics</em> parameter set to <strong>TRUE</strong>) and thus all the columns we have in the dataset can be considered adequate predictors.</p>
+<p>The data tidying portion of the work is done; on to model building.</p>
 </div>
 <div id="model-evaluation-and-selection" class="section level1">
 <h1>Model Evaluation and Selection</h1>
+<p>This part of the process entails the evaluation and selection of a classifier algorithm from amongst the ones discussed in the course. As the algorithms are compute-intensive, the selection is limited by the processing power of the machine on which this paper was composed.</p>
 <div id="reproducibility-of-work" class="section level2">
 <h2>Reproducibility of work</h2>
 <p>In order to ensure consistent results across subsequent runs of the code, a seed value is set so that the same values will be generated for all the model training and fitting executions.</p>
@@ -226,313 +224,76 @@ testingData &lt;-<span class="st"> </span>testingData[, <span class="kw">colSums
 </div>
 <div id="create-training-and-testing-datasets" class="section level2">
 <h2>Create Training and Testing datasets</h2>
-<p>In order to train the model and preserve the testing dataset, the original training data is split into two sub-datasets: training and testing. It’s a bit confusing but the purpose is to allow a higher degree of accuracy (i.e., low out-of-sample errors) when making predictions on the pristine testing dataset based on a refined model fit. Basically, the procedure is:</p>
+<p>In order to train the model and preserve the testing dataset, the original training data is split into two sub-datasets: training and testing. It’s a bit confusing but the purpose is to allow a higher degree of accuracy (i.e., low out-of-sample errors) when making predictions, based on a refined model fit, on the real test dataset. Basically, the procedure is:</p>
 <ol style="list-style-type: decimal">
-<li>split original training set into sub-training/test sets</li>
+<li>split the original training set into sub-training/test sets</li>
 <li>build the model on sub-training set</li>
 <li>evaluate the model on sub-test set</li>
 <li>repeat and average estimated errors</li>
 </ol>
 <p>This is accomplished using the <em>createDataPartition</em> method in the <strong>caret</strong> package:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">INDEX &lt;-<span class="st"> </span><span class="kw">createDataPartition</span>(<span class="dt">y =</span> trainingData$classe, <span class="dt">p =</span> <span class="fl">0.6</span>, <span class="dt">list =</span> <span class="ot">FALSE</span>)
+
 <span class="co"># Create a sub-training set using 60% of the original training data</span>
 trainingSet &lt;-<span class="st"> </span>trainingData[INDEX,]
+
 <span class="co"># Create a sub-testing set using 40% of the original training data</span>
 testingSet &lt;-<span class="st"> </span>trainingData[-INDEX,]</code></pre></div>
-<p>Next, a trainControl instance is created, using 3-fold cross validation.</p>
-<p>So the idea here is we break our data set up into k equal size data sets. we would build a prediction model on k-1 folds and apply the model to the kth fold. So, dividing our dataset into 3 folds, the prediction model would be built on the first two folds, applied to the third fold and so on. this training data. And we would apply it to this test data. Then we would build a training our model • break training set into K subsets • build the model/predictor on the remaining training data in each subset and applied to the test subset • rebuild the data K times with the training and test subsets and average the findings • considerations – larger k = less bias, more variance – smaller k = more bias, less variance</p>
+<p>Next, a <strong>trainControl</strong> instance is created, using 3-fold cross validation. The idea is to break the dataset up into <em>k</em> folds, or data sets of roughly equal size. Then, the first fold is excluded and a model is fit on the remaining 2 folds. The model is used to predict the first fold; this process is continued until all <em>k</em> folds have been modeled and predicted upon.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trainingControl &lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;cv&quot;</span>, <span class="dt">number =</span> <span class="dv">3</span>)</code></pre></div>
-<p>Once the trainingControl has been created, it is passed to the <strong>train</strong> function, which applies the desired machine learning algorithm to construct a model from the subset of the training data. Three different tree-based algorithms will be evaluated:</p>
+<p>Once the trainingControl has been created, it is passed to the <strong>train</strong> function, which applies the desired machine learning algorithm to construct a model from the subset of the training data. Due to the lack of sufficient computing power, only two different tree-based algorithms will be evaluated:</p>
 <ol style="list-style-type: decimal">
-<li>Decision Trees (rpart)</li>
-<li>Gradient Boosting Trees (gbm)</li>
-<li>Random Forest Decision Trees (rf)</li>
+<li><p>Decision Trees (rpart)</p></li>
+<li><p>Random Forest Decision Trees (rf)</p></li>
 </ol>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cartModel &lt;-<span class="st"> </span><span class="kw">trainer</span>(<span class="st">&quot;rpart&quot;</span>)
-gbmModel &lt;-<span class="st"> </span><span class="kw">trainer</span>(<span class="st">&quot;gbm&quot;</span>)</code></pre></div>
-<pre><code>## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.1276
-##      2        1.5236            -nan     0.1000    0.0850
-##      3        1.4660            -nan     0.1000    0.0638
-##      4        1.4226            -nan     0.1000    0.0558
-##      5        1.3859            -nan     0.1000    0.0472
-##      6        1.3542            -nan     0.1000    0.0450
-##      7        1.3248            -nan     0.1000    0.0345
-##      8        1.3028            -nan     0.1000    0.0336
-##      9        1.2802            -nan     0.1000    0.0354
-##     10        1.2572            -nan     0.1000    0.0321
-##     20        1.0972            -nan     0.1000    0.0162
-##     40        0.9250            -nan     0.1000    0.0091
-##     60        0.8163            -nan     0.1000    0.0059
-##     80        0.7377            -nan     0.1000    0.0040
-##    100        0.6751            -nan     0.1000    0.0038
-##    120        0.6231            -nan     0.1000    0.0031
-##    140        0.5796            -nan     0.1000    0.0023
-##    150        0.5608            -nan     0.1000    0.0011
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.1836
-##      2        1.4884            -nan     0.1000    0.1319
-##      3        1.4029            -nan     0.1000    0.1039
-##      4        1.3379            -nan     0.1000    0.0852
-##      5        1.2822            -nan     0.1000    0.0707
-##      6        1.2371            -nan     0.1000    0.0643
-##      7        1.1943            -nan     0.1000    0.0621
-##      8        1.1548            -nan     0.1000    0.0461
-##      9        1.1247            -nan     0.1000    0.0465
-##     10        1.0951            -nan     0.1000    0.0508
-##     20        0.8926            -nan     0.1000    0.0188
-##     40        0.6803            -nan     0.1000    0.0103
-##     60        0.5510            -nan     0.1000    0.0071
-##     80        0.4619            -nan     0.1000    0.0059
-##    100        0.3944            -nan     0.1000    0.0022
-##    120        0.3432            -nan     0.1000    0.0021
-##    140        0.3006            -nan     0.1000    0.0009
-##    150        0.2821            -nan     0.1000    0.0015
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.2437
-##      2        1.4576            -nan     0.1000    0.1630
-##      3        1.3530            -nan     0.1000    0.1243
-##      4        1.2752            -nan     0.1000    0.1132
-##      5        1.2055            -nan     0.1000    0.0862
-##      6        1.1497            -nan     0.1000    0.0743
-##      7        1.1025            -nan     0.1000    0.0600
-##      8        1.0619            -nan     0.1000    0.0547
-##      9        1.0267            -nan     0.1000    0.0537
-##     10        0.9911            -nan     0.1000    0.0571
-##     20        0.7513            -nan     0.1000    0.0237
-##     40        0.5267            -nan     0.1000    0.0112
-##     60        0.3992            -nan     0.1000    0.0056
-##     80        0.3208            -nan     0.1000    0.0047
-##    100        0.2621            -nan     0.1000    0.0031
-##    120        0.2161            -nan     0.1000    0.0024
-##    140        0.1837            -nan     0.1000    0.0011
-##    150        0.1701            -nan     0.1000    0.0013
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.1317
-##      2        1.5193            -nan     0.1000    0.0914
-##      3        1.4582            -nan     0.1000    0.0724
-##      4        1.4107            -nan     0.1000    0.0541
-##      5        1.3751            -nan     0.1000    0.0543
-##      6        1.3393            -nan     0.1000    0.0390
-##      7        1.3133            -nan     0.1000    0.0400
-##      8        1.2877            -nan     0.1000    0.0324
-##      9        1.2660            -nan     0.1000    0.0300
-##     10        1.2448            -nan     0.1000    0.0293
-##     20        1.0869            -nan     0.1000    0.0193
-##     40        0.9135            -nan     0.1000    0.0091
-##     60        0.8048            -nan     0.1000    0.0066
-##     80        0.7240            -nan     0.1000    0.0043
-##    100        0.6622            -nan     0.1000    0.0045
-##    120        0.6114            -nan     0.1000    0.0029
-##    140        0.5687            -nan     0.1000    0.0024
-##    150        0.5486            -nan     0.1000    0.0026
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.1918
-##      2        1.4826            -nan     0.1000    0.1355
-##      3        1.3951            -nan     0.1000    0.1043
-##      4        1.3262            -nan     0.1000    0.0807
-##      5        1.2724            -nan     0.1000    0.0690
-##      6        1.2269            -nan     0.1000    0.0707
-##      7        1.1810            -nan     0.1000    0.0630
-##      8        1.1411            -nan     0.1000    0.0473
-##      9        1.1108            -nan     0.1000    0.0420
-##     10        1.0835            -nan     0.1000    0.0419
-##     20        0.8785            -nan     0.1000    0.0186
-##     40        0.6653            -nan     0.1000    0.0112
-##     60        0.5435            -nan     0.1000    0.0083
-##     80        0.4569            -nan     0.1000    0.0034
-##    100        0.3900            -nan     0.1000    0.0022
-##    120        0.3406            -nan     0.1000    0.0017
-##    140        0.2989            -nan     0.1000    0.0006
-##    150        0.2834            -nan     0.1000    0.0001
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.2378
-##      2        1.4548            -nan     0.1000    0.1675
-##      3        1.3458            -nan     0.1000    0.1285
-##      4        1.2639            -nan     0.1000    0.1046
-##      5        1.1976            -nan     0.1000    0.0906
-##      6        1.1392            -nan     0.1000    0.0708
-##      7        1.0926            -nan     0.1000    0.0638
-##      8        1.0515            -nan     0.1000    0.0638
-##      9        1.0104            -nan     0.1000    0.0569
-##     10        0.9732            -nan     0.1000    0.0442
-##     20        0.7382            -nan     0.1000    0.0224
-##     40        0.5104            -nan     0.1000    0.0117
-##     60        0.3952            -nan     0.1000    0.0047
-##     80        0.3137            -nan     0.1000    0.0030
-##    100        0.2574            -nan     0.1000    0.0024
-##    120        0.2147            -nan     0.1000    0.0024
-##    140        0.1828            -nan     0.1000    0.0012
-##    150        0.1691            -nan     0.1000    0.0013
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.1192
-##      2        1.5239            -nan     0.1000    0.0871
-##      3        1.4652            -nan     0.1000    0.0676
-##      4        1.4204            -nan     0.1000    0.0539
-##      5        1.3837            -nan     0.1000    0.0503
-##      6        1.3513            -nan     0.1000    0.0444
-##      7        1.3225            -nan     0.1000    0.0354
-##      8        1.2993            -nan     0.1000    0.0317
-##      9        1.2777            -nan     0.1000    0.0356
-##     10        1.2548            -nan     0.1000    0.0268
-##     20        1.0966            -nan     0.1000    0.0177
-##     40        0.9234            -nan     0.1000    0.0092
-##     60        0.8143            -nan     0.1000    0.0053
-##     80        0.7334            -nan     0.1000    0.0047
-##    100        0.6709            -nan     0.1000    0.0024
-##    120        0.6205            -nan     0.1000    0.0032
-##    140        0.5758            -nan     0.1000    0.0022
-##    150        0.5564            -nan     0.1000    0.0016
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.1803
-##      2        1.4881            -nan     0.1000    0.1273
-##      3        1.4053            -nan     0.1000    0.1030
-##      4        1.3374            -nan     0.1000    0.0846
-##      5        1.2814            -nan     0.1000    0.0784
-##      6        1.2316            -nan     0.1000    0.0614
-##      7        1.1922            -nan     0.1000    0.0568
-##      8        1.1550            -nan     0.1000    0.0491
-##      9        1.1228            -nan     0.1000    0.0395
-##     10        1.0959            -nan     0.1000    0.0389
-##     20        0.8840            -nan     0.1000    0.0180
-##     40        0.6693            -nan     0.1000    0.0113
-##     60        0.5474            -nan     0.1000    0.0079
-##     80        0.4674            -nan     0.1000    0.0053
-##    100        0.3983            -nan     0.1000    0.0032
-##    120        0.3433            -nan     0.1000    0.0036
-##    140        0.2997            -nan     0.1000    0.0021
-##    150        0.2824            -nan     0.1000    0.0019
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.2280
-##      2        1.4597            -nan     0.1000    0.1546
-##      3        1.3574            -nan     0.1000    0.1211
-##      4        1.2794            -nan     0.1000    0.1025
-##      5        1.2132            -nan     0.1000    0.0982
-##      6        1.1511            -nan     0.1000    0.0715
-##      7        1.1060            -nan     0.1000    0.0597
-##      8        1.0668            -nan     0.1000    0.0697
-##      9        1.0224            -nan     0.1000    0.0581
-##     10        0.9850            -nan     0.1000    0.0480
-##     20        0.7532            -nan     0.1000    0.0234
-##     40        0.5280            -nan     0.1000    0.0115
-##     60        0.3968            -nan     0.1000    0.0076
-##     80        0.3178            -nan     0.1000    0.0042
-##    100        0.2597            -nan     0.1000    0.0022
-##    120        0.2168            -nan     0.1000    0.0015
-##    140        0.1838            -nan     0.1000    0.0014
-##    150        0.1691            -nan     0.1000    0.0010
-## 
-## Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-##      1        1.6094            -nan     0.1000    0.2343
-##      2        1.4597            -nan     0.1000    0.1610
-##      3        1.3575            -nan     0.1000    0.1254
-##      4        1.2769            -nan     0.1000    0.1102
-##      5        1.2072            -nan     0.1000    0.0814
-##      6        1.1550            -nan     0.1000    0.0731
-##      7        1.1077            -nan     0.1000    0.0723
-##      8        1.0612            -nan     0.1000    0.0503
-##      9        1.0267            -nan     0.1000    0.0621
-##     10        0.9874            -nan     0.1000    0.0492
-##     20        0.7484            -nan     0.1000    0.0213
-##     40        0.5264            -nan     0.1000    0.0111
-##     60        0.4078            -nan     0.1000    0.0092
-##     80        0.3242            -nan     0.1000    0.0054
-##    100        0.2656            -nan     0.1000    0.0025
-##    120        0.2227            -nan     0.1000    0.0015
-##    140        0.1907            -nan     0.1000    0.0021
-##    150        0.1771            -nan     0.1000    0.0011</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rfModel &lt;-<span class="st"> </span><span class="kw">trainer</span>(<span class="st">&quot;rf&quot;</span>)
-
-<span class="co">#cartModel &lt;- train(classe ~ ., data = trainingSet, method = &quot;rpart&quot;, trControl = trainingControl)</span>
-<span class="co">#gbmModel &lt;- train(classe ~ ., data = trainingSet, method = &quot;gbm&quot;, trControl = trainingControl)</span>
-<span class="co">#rfModel &lt;- train(classe ~ ., data = trainingSet, method = &quot;rf&quot;, trControl = trainingControl)</span>
-
-<span class="co">#rfModel &lt;- train(classe ~ ., data = trainingSet, method = &quot;rf&quot;, trControl = trainingControl)</span>
-<span class="co">#rfModel$finalModel</span></code></pre></div>
+<p>A helper function is used to fit the data to the model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rpartModel &lt;-<span class="st"> </span><span class="kw">trainer</span>(<span class="st">&quot;rpart&quot;</span>)
+rfModel &lt;-<span class="st"> </span><span class="kw">trainer</span>(<span class="st">&quot;rf&quot;</span>)</code></pre></div>
 </div>
-</div>
-<div id="model-retraining" class="section level1">
-<h1>Model Retraining</h1>
 </div>
 <div id="prediction-using-training-and-test-sets" class="section level1">
 <h1>Prediction using Training and Test Sets</h1>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, <span class="dt">newdata =</span> trainingSet, <span class="dt">type=</span><span class="st">&quot;raw&quot;</span>)
-<span class="kw">confusionMatrix</span>(prediction, trainingSet$classe)</code></pre></div>
-<pre><code>## Confusion Matrix and Statistics
-## 
-##           Reference
+<p>Once the data has been fit to a model, an evaluation of the predictive nature of each algorithm can be performed. The <strong>predict</strong> method is used for this purpose, and then the predicted values are processed using a <em>confusionMatrix</em>, which is a table that is often used to describe the performance of a classification model (or “classifier”) on a set of test data for which the true values are known. This is similar in concept to a truth-table. For binary (2-class) classification models, it tells:</p>
+<ul>
+<li><p><strong>Sensitivity</strong>: what are the true positives?</p></li>
+<li><p><strong>Specificity</strong>: what are the true negatives?</p></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rpartPrediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rpartModel, <span class="dt">newdata =</span> trainingSet, <span class="dt">type =</span> <span class="st">&quot;raw&quot;</span>)
+rpartCM &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(rpartPrediction, trainingSet$classe)
+
+rfPrediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, <span class="dt">newdata =</span> trainingSet, <span class="dt">type=</span><span class="st">&quot;raw&quot;</span>)
+rfCM &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(rfPrediction, trainingSet$classe)</code></pre></div>
+<p>The accuracy for the <strong>rpart</strong> algorithm is 0.497962 and for the <strong>rf</strong> algorithm the accuracy is 1. Clearly, the accuracy of prediction for the <strong>rf</strong> algorithm surpasses that of the <strong>rpart</strong> algorithm; looking at their truth tables adds additional support for this conclusion:</p>
+<pre><code>##           Reference
+## Prediction    A    B    C    D    E
+##          A 3035  909  954  873  304
+##          B   54  792   62  329  292
+##          C  252  578 1038  728  570
+##          D    0    0    0    0    0
+##          E    7    0    0    0  999</code></pre>
+<pre><code>##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 3348    0    0    0    0
 ##          B    0 2279    0    0    0
 ##          C    0    0 2054    0    0
 ##          D    0    0    0 1930    0
-##          E    0    0    0    0 2165
-## 
-## Overall Statistics
-##                                      
-##                Accuracy : 1          
-##                  95% CI : (0.9997, 1)
-##     No Information Rate : 0.2843     
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
-##                                      
-##                   Kappa : 1          
-##  Mcnemar's Test P-Value : NA         
-## 
-## Statistics by Class:
-## 
-##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
-## Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
-## Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
-## Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
-## Prevalence             0.2843   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2843   0.1935   0.1744   0.1639   0.1838
-## Detection Prevalence   0.2843   0.1935   0.1744   0.1639   0.1838
-## Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000</code></pre>
+##          E    0    0    0    0 2165</code></pre>
+<p>Looking at the diagonals for each table leaves no “confusion” about which algorithm to apply to the testing subset and for predicting the labels of the full test dataset.</p>
+<p>Since the <strong>rf</strong> algorithm clearly has the most accurate predictive results, evaluate the sub-test dataset using this algorithm.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, <span class="dt">newdata =</span> testingSet, <span class="dt">type=</span><span class="st">&quot;raw&quot;</span>)
-<span class="kw">confusionMatrix</span>(prediction, testingSet$classe)</code></pre></div>
-<pre><code>## Confusion Matrix and Statistics
-## 
-##           Reference
+testRFCM &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(prediction, testingSet$classe)</code></pre></div>
+<p>The accuracy here is 0.9910783 and the confusion matrix is:</p>
+<pre><code>##           Reference
 ## Prediction    A    B    C    D    E
-##          A 2230   13    0    0    0
-##          B    1 1502    8    0    1
-##          C    1    3 1355   26    5
-##          D    0    0    5 1257    4
-##          E    0    0    0    3 1432
-## 
-## Overall Statistics
-##                                          
-##                Accuracy : 0.9911         
-##                  95% CI : (0.9887, 0.993)
-##     No Information Rate : 0.2845         
-##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16      
-##                                          
-##                   Kappa : 0.9887         
-##  Mcnemar's Test P-Value : NA             
-## 
-## Statistics by Class:
-## 
-##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9991   0.9895   0.9905   0.9774   0.9931
-## Specificity            0.9977   0.9984   0.9946   0.9986   0.9995
-## Pos Pred Value         0.9942   0.9934   0.9748   0.9929   0.9979
-## Neg Pred Value         0.9996   0.9975   0.9980   0.9956   0.9984
-## Prevalence             0.2845   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2842   0.1914   0.1727   0.1602   0.1825
-## Detection Prevalence   0.2859   0.1927   0.1772   0.1614   0.1829
-## Balanced Accuracy      0.9984   0.9939   0.9925   0.9880   0.9963</code></pre>
+##          A 2231   13    0    0    0
+##          B    1 1501   10    0    0
+##          C    0    4 1353   23    6
+##          D    0    0    5 1260    5
+##          E    0    0    0    3 1431</code></pre>
 </div>
 <div id="predictions-using-test-data" class="section level1">
 <h1>Predictions Using Test Data</h1>
+<p>The final step in the project is to use the model to make 20 predictions about the manner in which each of the participants performed the exercise; the output of the predictions is shown below and was submitted for verification by the course participants in a peer-review fashion.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(rfModel, testingData, <span class="dt">type =</span> <span class="st">&quot;raw&quot;</span>)
 for (i in <span class="dv">1</span>:<span class="kw">length</span>(prediction)) 
         <span class="kw">print</span>(<span class="kw">paste0</span>(<span class="st">&quot;Prediction &quot;</span>, i, <span class="st">&quot; = &quot;</span>, prediction[i]))</code></pre></div>
