@@ -13,31 +13,23 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 # Introduction
-This paper summarizes the knowledge gained during the Practical Machine Learning module of the Coursera Data Science Specialization.  It attempts to predict
+This paper summarizes the knowledge gained during the Practical Machine Learning module of the Coursera Data Science Specialization.  It describes the processes of fitting various tree-based classification algorithms against training and validation datasets, evaluating the results of predictions made based on model fitted data, then choosing the best fit and using it to predict behavior for a non-classified dataset.
 
-Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website [here](http://groupware.les.inf.puc-rio.br/har) (see the section on the Weight Lifting Exercise Dataset).
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit, it is now possible to collect a large amount of data about personal activity relatively inexpensively. These types of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how **much** of a particular activity they do, but they rarely quantify how **well** they do it. This project uses data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website [here](http://groupware.les.inf.puc-rio.br/har) (see the section on the Weight Lifting Exercise Dataset).
 
 ## Data
+The training data for this project are available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv).  The test data are available 
+[here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv).
 
-The training data for this project are available [here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv)
+The data for this project come from this [source](http://groupware.les.inf.puc-rio.br/har). **If you use their data for any purpose, please cite them in your work.**
 
-The test data are available 
-[here](https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv)
-
-The data for this project come from this [source](http://groupware.les.inf.puc-rio.br/har). If you use their data for any purpose, please cite them in your work.
-
-Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
-
-[Read more](http://groupware.les.inf.puc-rio.br/har#ixzz4Jrvxp2iu)
-
-This paper makes extensive use of the **caret** package.  More information about this package can be found [here](http://topepo.github.io/caret/index.html)
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).  [Read more](http://groupware.les.inf.puc-rio.br/har#ixzz4Jrvxp2iu).
 
 # Creating Training and Testing Datasets
+From the two datasets, a training and validation dataset will be created from the main training data; the testing dataset will be untouched until the appropriate model has been selected, at which time it will be used to predict the activity performed by each trial participant.
+
 ## Load the Data
-
-Before the data is loaded into R, it was viewed using a spreadsheet program.
-Examination of the data reveals columns with spurious data, such as divide-by-zero indicators.  These were identified and specified to the _na.strings_ parameter of the **read.csv** method.
-
+Before the data was loaded into R, it was viewed using a spreadsheet program.  Examination of the data revealed columns with spurious data, such as divide-by-zero indicators.  These were identified and specified to the _na.strings_ parameter of the **read.csv** method.
 
 ```{r load_data}
 trainingData <- read.csv("pml-training.csv", na.strings = c("NA", "#DIV/0!", ""))
@@ -45,125 +37,129 @@ testingData <- read.csv("pml-testing.csv", na.strings = c("NA", "#DIV/0!", ""))
 ```
 
 ## Load the necessary packages
-
-The caret package will be needed for the data tidying work as well as model building, etc., so load it now.
-```{r load_packages}
+This paper makes extensive use of the **caret** package for the data tidying work as well as model building.  More information about this package can be found [here](http://topepo.github.io/caret/index.html).
+```{r load_packages, message=FALSE, warning=FALSE}
 library(caret)
 ```
+
 # Data Tidying
 The initial data prep puts the datasets in a good state for data tidying.
 ```{r data_tidy_1}
 dim(trainingData)
 ```
-Clearly there are a lot of variables (predictors) to choose from.  But not all of them might be suitable.  The task here is to eliminate/reduce the number of predictors to a reasonable working set.  The first step in that process is to look at the names.
+Clearly there are a lot (`r ncol(trainingData)`) of variables/predictors to choose from.  But not all of them might be suitable.  The task here is to eliminate/reduce the number of predictors to a reasonable working set.  The first step in that process is to look at the data.  Judging from the columns names seen in the spreadsheet (and, in the absence of a data dictionary), the first 7 columns are likely candidates for exclusion:
 ```{r data_tidy_2}
-names(trainingData)
+head(testingData[, 1:7], n = 3)
+tail(testingData[, 1:7], n = 3)
 ```
-of these, the first 7 will not be candidates for predictor variables, so they will be removed from both the training and testing datasets.
+These values are clearly not useful as predictor variables and can be removed from both the training and testing datasets.
 ```{r data_tidy_3}
 trainingData <- trainingData[, 8:ncol(trainingData)]
 testingData <- testingData[, 8:ncol(testingData)]
 ```
-
-The data contains many columns with a large number of **NA** values.  Columns with 50% or greater of NA values will contribute nothing to the model.  These are removed with the following line of code:
-
+The data contains many columns with a large number of **NA** values.  Columns with 50% or greater of **NA** values will contribute nothing to the model.  These are removed with the following lines of code:
 ```{r data_tidy_4}
 trainingData <- trainingData[, colSums(is.na(trainingData)) < (nrow(trainingData) * 0.5)]
 testingData <- testingData[, colSums(is.na(testingData)) < (nrow(testingData) * 0.5)]
-
 ```
-
 The last step in the data tidying process is to check for any columns where the variance is near or equal to zero, meaning that these variables can potentially cause problems for modeling.
-**need to explain this better**
 ```{r data_tidy_5}
 nearZeroVar(trainingData)
 nearZeroVar(testingData)
 ```
+The result, **integer(0)**, means that no columns have a near-zero variance (i.e., _zeroVar_ and _nzv_ display **FALSE** for all predictors when using the _saveMetrics_ parameter set to **TRUE**) and thus all the columns we have in the dataset can be considered adequate predictors.
 
-The result, **integer(0)**, means that no columns have a near-zero variance (i.e., zeroVar and nzv display FALSE for all predictors when using the _saveMetrics_ parameter set to **TRUE**) and thus all the columns we have in the dataset can be considered adequate predictors.
 The data tidying portion of the work is done; on to model building.
 
 # Model Evaluation and Selection
+This part of the process entails the evaluation and selection of a classifier algorithm from amongst the ones discussed in the course.  As the algorithms are compute-intensive, the selection is limited by the processing power of the machine on which this paper was composed.
 
 ## Reproducibility of work
+In order to ensure consistent results across subsequent runs of the code, a seed value is set so that the same values will be generated for all the model training and fitting executions.
 ```{r set_seed}
 set.seed(9999)
 ```
 
 ## Create Training and Testing datasets
+In order to train the model and preserve the testing dataset, the original training data is split into two sub-datasets: training and testing.  It's a bit confusing but the purpose is to allow a higher degree of accuracy (i.e., low out-of-sample errors) when making predictions, based on a refined model fit, on the real test dataset.  Basically, the procedure is:
+
+1. split the original training set into sub-training/test sets
+2. build the model on sub-training set
+3. evaluate the model on sub-test set
+4. repeat and average estimated errors
+
+This is accomplished using the _createDataPartition_ method in the **caret** package:
+
 ```{r train_and_test}
+INDEX <- createDataPartition(y = trainingData$classe, p = 0.6, list = FALSE)
 
-INDEX <- createDataPartition(y=trainingData$classe, p=0.6, list = FALSE)
+# Create a sub-training set using 60% of the original training data
 trainingSet <- trainingData[INDEX,]
+
+# Create a sub-testing set using 40% of the original training data
 testingSet <- trainingData[-INDEX,]
-
 ```
 
-Another approach that's commonly used is
-what's called K-fold cross validation. So the idea here is we break our data set
-up into k equal size data sets. So, for example, for three fold cross validation, this is what it would look
-like. So here's. The first data set, right here, then
-there's a middle data set right here, and the last third
-data set right here, and so what we would do is on the
-first fold, we would build a prediction model on
-this training data. And we would apply it to this test data. Then we would build a training our model
-on the, just the dark gray components of this second fold, and apply
-it to the middle fold for evaluation. Then finally, we would do the same thing
-down here. We would build our model on this dark gray
-part, and apply it to the light gray part. And again, we would average the errors
-that we got across all of those experiments, and
-we would get an estimate of [COUGH] the average error
-rate that we would get in an out of sample
-estimation procedure. So again, all of these model building and
-evaluation are happening in, within the training set, which we've
-been subs divided into a. Sub training set and a sub testing set to
-evaluate models.
+Next, a **trainControl** instance is created, using 3-fold cross validation.  The idea is to break the dataset up into _k_ folds, or data sets of roughly equal size.  Then, the first fold is excluded and a model is fit on the remaining 2 folds.  The model is used to predict the first fold; this process is continued until all _k_ folds have been modeled and predicted upon.
 
- For k-fold cross validation, the larger
-the k that you take, you'll get less bias, but more
-variance. And the smaller k that you take, you'll
-get more bias, but less variance. In other words, if you took a very large
-k, say for example a ten-fold cross validation or a 20-fold cross validation,
-that means you'll get a very accurate estimate of
-the. Of the bias between your predicted values,
-and your true values. But it'll be highly variable. In other words, it'll depend a lot on
-which random subsets that you take. For smaller ks, we won't necessarily get
-as good an estimate of the out of sample error
-rate. And that's because, you're only leaving
-one sample out. And so you're using most of your data to
-train your model. But there'll be less variance. In other words, if you do in the extreme
-case. If you have for exampleonly two cross,
-two-fold cross validation, there are only a very
-small. Number of subsets that can make up a
-two-fold cross validation. And so you get less variance.
-The selected algorithm is Random Forest.  A 3-cross validation will be used:
-
-```{r random_forest}
+```{r training_data}
 trainingControl <- trainControl(method = "cv", number = 3)
-rfModel <- train(classe ~ ., data = trainingSet, method = "rf", trControl=trainingControl)
+```
+Once the trainingControl has been created, it is passed to the **train** function, which applies the desired machine learning algorithm to construct a model from the subset of the training data.  Due to the lack of sufficient computing power, only two different tree-based algorithms will be evaluated:  
 
+1. Decision Trees (rpart)
+
+2. Random Forest Decision Trees (rf)
+
+```{r define_function, echo=FALSE}
+trainer <- function(x) {
+  train(classe ~ ., data = trainingSet, method = x, trControl = trainingControl)
+}
 ```
 
-# Model Retraining
+A helper function is used to fit the data to the model:
+```{r model_training, message=FALSE}
+rpartModel <- trainer("rpart")
+rfModel <- trainer("rf")
+```
 
 # Prediction using Training and Test Sets
-```{r prediction}
-prediction <- predict(rfModel, trainingSet, type="raw")
-confusionMatrix(prediction, trainingSet$classe)
-prediction <- predict(rfModel, testingSet, type="raw")
-confusionMatrix(prediction, testingSet$classe)
+Once the data has been fit to a model, an evaluation of the predictive nature of each algorithm can be performed.  The **predict** method is used for this purpose, and then the predicted values are processed using a _confusionMatrix_, which is a table that is often used to describe the performance of a classification model (or "classifier") on a set of test data for which the true values are known.  This is similar in concept to a truth-table.  For binary (2-class) classification models, it tells:
 
+* __Sensitivity__: what are the true positives?
+
+* __Specificity__: what are the true negatives?
+
+```{r prediction_training_subset}
+rpartPrediction <- predict(rpartModel, newdata = trainingSet, type = "raw")
+rpartCM <- confusionMatrix(rpartPrediction, trainingSet$classe)
+
+rfPrediction <- predict(rfModel, newdata = trainingSet, type="raw")
+rfCM <- confusionMatrix(rfPrediction, trainingSet$classe)
+```
+
+The accuracy for the **rpart** algorithm is `r rpartCM$overall[1]` and for the **rf** algorithm the accuracy is `r rfCM$overall[1]`.  Clearly, the accuracy of prediction for the **rf** algorithm surpasses that of the **rpart** algorithm; looking at their truth tables adds additional support for this conclusion:
+```{r truth_tables, echo=FALSE}
+rpartCM$table
+rfCM$table
+```
+Looking at the diagonals for each table leaves no "confusion" about which algorithm to apply to the testing subset and for predicting the labels of the full test dataset.
+
+Since the **rf** algorithm clearly has the most accurate predictive results, evaluate the sub-test dataset using this algorithm.
+```{r prediction_testing_subset}
+prediction <- predict(rfModel, newdata = testingSet, type="raw")
+testRFCM <- confusionMatrix(prediction, testingSet$classe)
+```
+
+The accuracy here is `r testRFCM$overall[1]` and the confusion matrix is:
+```{r testing_subset_confusionMatrix, echo=FALSE}
+testRFCM$table
 ```
 
 # Predictions Using Test Data
-```{r predictions}
+The final step in the project is to use the model to make 20 predictions about the manner in which each of the participants performed the exercise; the output of the predictions is shown below and was submitted for verification by the course participants in a peer-review fashion.
+```{r prediction_testing}
 prediction <- predict(rfModel, testingData, type = "raw")
-for (i in seq(20)) { 
-        fileName <- paste("Problem", i, ".txt"); 
-        write.table(prediction[i], 
-                    file = fileName, 
-                    quote = FALSE, 
-                    row.names = FALSE, 
-                    col.names = FALSE)
-        }
+for (i in 1:length(prediction)) 
+        print(paste0("Prediction ", i, " = ", prediction[i]))
 ```
